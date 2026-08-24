@@ -1,23 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { TicketStatusPopover } from "@/components/ticket/ticket-status-popover";
+import { TaskStatusPopover } from "@/components/task/task-status-popover";
 import { formatDateIT } from "@/lib/format";
-import type { TicketStato } from "@/lib/supabase/types";
+import type { TaskRowWithLink } from "@/lib/task-links";
+import type { TaskStato } from "@/lib/supabase/types";
 
-export interface TicketRow {
-  id: string;
-  titolo: string;
-  stato: TicketStato;
-  created_at: string;
-  clienti: { nome: string } | null;
-}
-
-type SortField = "titolo" | "stato" | "created_at";
+type SortField = "titolo" | "stato" | "scadenza" | "created_at";
 
 function SortableHead({ field, label }: { field: SortField; label: string }) {
   const router = useRouter();
@@ -55,32 +49,31 @@ function SortableHead({ field, label }: { field: SortField; label: string }) {
   );
 }
 
-export function TicketTable({
-  tickets,
+export function TaskTable({
+  tasks,
   sortable = false,
-  showCliente = true,
+  showLink = false,
 }: {
-  tickets: TicketRow[];
+  tasks: TaskRowWithLink[];
   sortable?: boolean;
-  showCliente?: boolean;
+  showLink?: boolean;
 }) {
-  const router = useRouter();
-  const [prevTickets, setPrevTickets] = useState(tickets);
-  const [items, setItems] = useState(tickets);
+  const [prevTasks, setPrevTasks] = useState(tasks);
+  const [items, setItems] = useState(tasks);
 
-  if (tickets !== prevTickets) {
-    setPrevTickets(tickets);
-    setItems(tickets);
+  if (tasks !== prevTasks) {
+    setPrevTasks(tasks);
+    setItems(tasks);
   }
 
-  function handleStatoChange(ticketId: string, nextStato: TicketStato) {
-    setItems((prev) => prev.map((t) => (t.id === ticketId ? { ...t, stato: nextStato } : t)));
+  function handleStatoChange(taskId: string, nextStato: TaskStato) {
+    setItems((prev) => prev.map((t) => (t.id === taskId ? { ...t, stato: nextStato } : t)));
   }
 
   if (items.length === 0) {
     return (
       <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-        Nessun ticket trovato.
+        Nessuna task trovata.
       </div>
     );
   }
@@ -91,32 +84,44 @@ export function TicketTable({
         <TableHeader>
           <TableRow>
             {sortable ? <SortableHead field="titolo" label="Titolo" /> : <TableHead>Titolo</TableHead>}
-            {showCliente && <TableHead>Cliente</TableHead>}
             {sortable ? <SortableHead field="stato" label="Stato" /> : <TableHead>Stato</TableHead>}
+            {sortable ? (
+              <SortableHead field="scadenza" label="Scadenza" />
+            ) : (
+              <TableHead>Scadenza</TableHead>
+            )}
             {sortable ? (
               <SortableHead field="created_at" label="Data" />
             ) : (
               <TableHead>Data</TableHead>
             )}
+            {showLink && <TableHead>Collegata a</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
           {items.map((t) => (
-            <TableRow
-              key={t.id}
-              className="cursor-pointer"
-              onClick={() => router.push(`/ticket/${t.id}`)}
-            >
+            <TableRow key={t.id}>
               <TableCell className="font-medium">{t.titolo}</TableCell>
-              {showCliente && <TableCell>{t.clienti?.nome ?? "—"}</TableCell>}
               <TableCell>
-                <TicketStatusPopover
-                  ticketId={t.id}
+                <TaskStatusPopover
+                  taskId={t.id}
                   stato={t.stato}
                   onChange={(next) => handleStatoChange(t.id, next)}
                 />
               </TableCell>
+              <TableCell>{t.scadenza ? formatDateIT(t.scadenza) : "—"}</TableCell>
               <TableCell>{formatDateIT(t.created_at)}</TableCell>
+              {showLink && (
+                <TableCell>
+                  {t.linkedHref && t.linkedLabel ? (
+                    <Link href={t.linkedHref} className="text-primary hover:underline">
+                      {t.linkedLabel}
+                    </Link>
+                  ) : (
+                    "—"
+                  )}
+                </TableCell>
+              )}
             </TableRow>
           ))}
         </TableBody>

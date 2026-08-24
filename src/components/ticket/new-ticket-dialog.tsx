@@ -6,6 +6,7 @@ import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { createTicket } from "@/app/(dashboard)/ticket/actions";
 import { ClientCombobox, type ClienteOption } from "@/components/ticket/client-combobox";
+import { ClienteFormFields } from "@/components/clienti/cliente-form-fields";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,38 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import type { ClienteTipo } from "@/lib/supabase/types";
-
-interface NewClienteDraft {
-  tipo: ClienteTipo;
-  nome: string;
-  telefono: string;
-  email: string;
-  indirizzo: string;
-  citta: string;
-  cap: string;
-  piva_cf: string;
-  note: string;
-}
-
-const EMPTY_NEW_CLIENTE: NewClienteDraft = {
-  tipo: "privato",
-  nome: "",
-  telefono: "",
-  email: "",
-  indirizzo: "",
-  citta: "",
-  cap: "",
-  piva_cf: "",
-  note: "",
-};
+import { EMPTY_CLIENTE_DRAFT, type ClienteDraft } from "@/lib/cliente-draft";
 
 export function NewTicketDialog() {
   const router = useRouter();
@@ -61,14 +31,14 @@ export function NewTicketDialog() {
   const [note, setNote] = useState("");
   const [cliente, setCliente] = useState<ClienteOption | null>(null);
   const [creatingCliente, setCreatingCliente] = useState(false);
-  const [newCliente, setNewCliente] = useState<NewClienteDraft>(EMPTY_NEW_CLIENTE);
+  const [newCliente, setNewCliente] = useState<ClienteDraft>(EMPTY_CLIENTE_DRAFT);
 
   function resetForm() {
     setTitolo("");
     setNote("");
     setCliente(null);
     setCreatingCliente(false);
-    setNewCliente(EMPTY_NEW_CLIENTE);
+    setNewCliente(EMPTY_CLIENTE_DRAFT);
   }
 
   function handleSubmit() {
@@ -151,90 +121,8 @@ export function NewTicketDialog() {
             </div>
 
             {creatingCliente ? (
-              <div className="flex flex-col gap-3 rounded-lg border p-3">
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="flex flex-col gap-2">
-                    <Label>Tipo</Label>
-                    <Select
-                      value={newCliente.tipo}
-                      onValueChange={(v) =>
-                        setNewCliente((c) => ({ ...c, tipo: v as ClienteTipo }))
-                      }
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="privato">Privato</SelectItem>
-                        <SelectItem value="azienda">Azienda</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <Label>Nome</Label>
-                    <Input
-                      value={newCliente.nome}
-                      onChange={(e) => setNewCliente((c) => ({ ...c, nome: e.target.value }))}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="flex flex-col gap-2">
-                    <Label>Telefono</Label>
-                    <Input
-                      value={newCliente.telefono}
-                      onChange={(e) =>
-                        setNewCliente((c) => ({ ...c, telefono: e.target.value }))
-                      }
-                    />
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <Label>Email</Label>
-                    <Input
-                      type="email"
-                      value={newCliente.email}
-                      onChange={(e) => setNewCliente((c) => ({ ...c, email: e.target.value }))}
-                    />
-                  </div>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <Label>Indirizzo</Label>
-                  <Input
-                    value={newCliente.indirizzo}
-                    onChange={(e) => setNewCliente((c) => ({ ...c, indirizzo: e.target.value }))}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="flex flex-col gap-2">
-                    <Label>Città</Label>
-                    <Input
-                      value={newCliente.citta}
-                      onChange={(e) => setNewCliente((c) => ({ ...c, citta: e.target.value }))}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <Label>CAP</Label>
-                    <Input
-                      value={newCliente.cap}
-                      onChange={(e) => setNewCliente((c) => ({ ...c, cap: e.target.value }))}
-                    />
-                  </div>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <Label>P.IVA / Codice Fiscale</Label>
-                  <Input
-                    value={newCliente.piva_cf}
-                    onChange={(e) => setNewCliente((c) => ({ ...c, piva_cf: e.target.value }))}
-                  />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <Label>Note cliente</Label>
-                  <Textarea
-                    value={newCliente.note}
-                    onChange={(e) => setNewCliente((c) => ({ ...c, note: e.target.value }))}
-                    rows={2}
-                  />
-                </div>
+              <div className="rounded-lg border p-3">
+                <ClienteFormFields value={newCliente} onChange={setNewCliente} />
               </div>
             ) : (
               <ClientCombobox value={cliente} onSelect={setCliente} />

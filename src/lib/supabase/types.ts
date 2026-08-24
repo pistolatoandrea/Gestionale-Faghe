@@ -5,8 +5,8 @@
 export type ClienteTipo = "privato" | "azienda";
 export type TicketStato = "nuovo" | "programmato_intervento" | "chiuso" | "perso";
 export type TicketCanale = "telefono" | "email" | "altro";
-export type InterventoStato = "programmato" | "completato" | "annullato";
-export type TaskStato = "da_fare" | "in_corso" | "completata";
+export type InterventoStato = "da_fare" | "chiuso" | "da_tornare";
+export type TaskStato = "aperto" | "in_pausa" | "chiuso";
 export type TaskEntityType = "ticket" | "cliente" | "intervento";
 
 export interface Database {
@@ -124,12 +124,12 @@ export interface Database {
         Row: {
           id: string;
           ticket_id: string;
-          data_inizio: string;
-          data_fine: string;
-          indirizzo: string | null;
+          nome: string;
+          data_ora: string;
+          luogo: string | null;
           stato: InterventoStato;
           assegnato_a: string | null;
-          note: string | null;
+          descrizione: string | null;
           created_by: string | null;
           created_at: string;
           updated_at: string;
@@ -137,12 +137,12 @@ export interface Database {
         Insert: {
           id?: string;
           ticket_id: string;
-          data_inizio: string;
-          data_fine: string;
-          indirizzo?: string | null;
+          nome: string;
+          data_ora: string;
+          luogo?: string | null;
           stato?: InterventoStato;
           assegnato_a?: string | null;
-          note?: string | null;
+          descrizione?: string | null;
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;

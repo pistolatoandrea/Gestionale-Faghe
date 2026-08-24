@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { CalendarDays, ListTodo, Ticket, Users } from "lucide-react";
+import { CalendarDays, Hammer, ListTodo, Ticket, Users } from "lucide-react";
 
 export interface ModuleDef {
   slug: string;
@@ -40,5 +40,12 @@ export const MODULES: ModuleDef[] = [
     label: "Task",
     description: "Attività collegate a ticket, clienti e interventi",
     icon: ListTodo,
+  },
+  {
+    slug: "interventi",
+    href: "/interventi",
+    label: "Interventi",
+    description: "Interventi sul campo collegati ai ticket",
+    icon: Hammer,
   },
 ];
