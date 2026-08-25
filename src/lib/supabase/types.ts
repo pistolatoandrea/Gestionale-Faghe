@@ -172,6 +172,36 @@ export interface Database {
           },
         ];
       };
+      eventi: {
+        Row: {
+          id: string;
+          nome: string;
+          data_ora: string;
+          luogo: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          nome: string;
+          data_ora: string;
+          luogo?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["eventi"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "eventi_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       task: {
         Row: {
           id: string;

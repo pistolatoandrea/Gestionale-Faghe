@@ -67,6 +67,38 @@ export async function createIntervento(
   return { interventoId: intervento.id };
 }
 
+export interface UpdateInterventoInput {
+  dataOra: string;
+  luogo?: string;
+  descrizione?: string;
+}
+
+export async function updateIntervento(
+  interventoId: string,
+  input: UpdateInterventoInput
+): Promise<{ error: string } | { success: true }> {
+  if (!input.dataOra) {
+    return { error: "Giorno e ora dell'intervento sono obbligatori." };
+  }
+
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("interventi")
+    .update({
+      data_ora: input.dataOra,
+      luogo: input.luogo?.trim() || null,
+      descrizione: input.descrizione?.trim() || null,
+    })
+    .eq("id", interventoId);
+
+  if (error) {
+    return { error: "Errore nell'aggiornamento dell'intervento: " + error.message };
+  }
+
+  return { success: true };
+}
+
 export async function updateInterventoStato(
   interventoId: string,
   stato: InterventoStato
@@ -77,6 +109,24 @@ export async function updateInterventoStato(
 
   if (error) {
     return { error: "Errore nell'aggiornamento dello stato: " + error.message };
+  }
+
+  return { success: true };
+}
+
+export async function moveIntervento(
+  interventoId: string,
+  dataOra: string
+): Promise<{ error: string } | { success: true }> {
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("interventi")
+    .update({ data_ora: dataOra })
+    .eq("id", interventoId);
+
+  if (error) {
+    return { error: "Errore nello spostamento dell'intervento: " + error.message };
   }
 
   return { success: true };

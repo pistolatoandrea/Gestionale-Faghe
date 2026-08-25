@@ -49,6 +49,39 @@ export async function createTask(input: CreateTaskInput): Promise<CreateTaskResu
   return { taskId: task.id };
 }
 
+export interface UpdateTaskInput {
+  titolo: string;
+  descrizione?: string;
+  scadenza?: string | null;
+}
+
+export async function updateTask(
+  taskId: string,
+  input: UpdateTaskInput
+): Promise<{ error: string } | { success: true }> {
+  const titolo = input.titolo.trim();
+  if (!titolo) {
+    return { error: "Il titolo è obbligatorio." };
+  }
+
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("task")
+    .update({
+      titolo,
+      descrizione: input.descrizione?.trim() || null,
+      scadenza: input.scadenza || null,
+    })
+    .eq("id", taskId);
+
+  if (error) {
+    return { error: "Errore nell'aggiornamento della task: " + error.message };
+  }
+
+  return { success: true };
+}
+
 export async function updateTaskStato(
   taskId: string,
   stato: TaskStato
@@ -59,6 +92,21 @@ export async function updateTaskStato(
 
   if (error) {
     return { error: "Errore nell'aggiornamento dello stato: " + error.message };
+  }
+
+  return { success: true };
+}
+
+export async function moveTaskScadenza(
+  taskId: string,
+  scadenza: string
+): Promise<{ error: string } | { success: true }> {
+  const supabase = await createClient();
+
+  const { error } = await supabase.from("task").update({ scadenza }).eq("id", taskId);
+
+  if (error) {
+    return { error: "Errore nello spostamento della scadenza: " + error.message };
   }
 
   return { success: true };
