@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { toDatetimeLocalValue } from "@/lib/format";
 import { createClient } from "@/lib/supabase/client";
 
@@ -22,6 +23,7 @@ interface EventoDetail {
   nome: string;
   data_ora: string;
   luogo: string | null;
+  note: string | null;
 }
 
 export function EventoDetailDialog({
@@ -45,6 +47,7 @@ export function EventoDetailDialog({
   const [nome, setNome] = useState("");
   const [dataOra, setDataOra] = useState("");
   const [luogo, setLuogo] = useState("");
+  const [note, setNote] = useState("");
 
   useEffect(() => {
     if (!open || !eventoId) return;
@@ -55,7 +58,7 @@ export function EventoDetailDialog({
       const supabase = createClient();
       const { data, error } = await supabase
         .from("eventi")
-        .select("id, nome, data_ora, luogo")
+        .select("id, nome, data_ora, luogo, note")
         .eq("id", eventoId)
         .single();
 
@@ -68,6 +71,7 @@ export function EventoDetailDialog({
       setNome(data.nome);
       setDataOra(toDatetimeLocalValue(data.data_ora));
       setLuogo(data.luogo ?? "");
+      setNote(data.note ?? "");
     });
 
     return () => {
@@ -91,6 +95,7 @@ export function EventoDetailDialog({
         nome,
         dataOra: new Date(dataOra).toISOString(),
         luogo,
+        note,
       });
 
       if ("error" in result) {
@@ -154,6 +159,16 @@ export function EventoDetailDialog({
             <div className="flex flex-col gap-2">
               <Label htmlFor="evento-detail-luogo">Luogo</Label>
               <Input id="evento-detail-luogo" value={luogo} onChange={(e) => setLuogo(e.target.value)} />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="evento-detail-note">Note</Label>
+              <Textarea
+                id="evento-detail-note"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                rows={3}
+              />
             </div>
           </div>
         )}

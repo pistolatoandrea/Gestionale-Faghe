@@ -18,10 +18,10 @@ import { toast } from "sonner";
 import { moveEvento } from "@/app/(dashboard)/calendario/actions";
 import { moveIntervento } from "@/app/(dashboard)/interventi/actions";
 import { moveTaskScadenza } from "@/app/(dashboard)/task/actions";
-import { EventoDetailDialog } from "@/components/calendario/evento-detail-dialog";
+import { EventoInfoDialog } from "@/components/calendario/evento-info-dialog";
 import { NewEventDialog } from "@/components/calendario/new-event-dialog";
-import { InterventoDetailDialog } from "@/components/interventi/intervento-detail-dialog";
-import { TaskDetailDialog } from "@/components/task/task-detail-dialog";
+import { InterventoInfoDialog } from "@/components/interventi/intervento-info-dialog";
+import { TaskInfoDialog } from "@/components/task/task-info-dialog";
 import { Button } from "@/components/ui/button";
 import { CALENDAR_SOURCE_STYLE, type CalendarSource } from "@/lib/calendario-colors";
 import { toDateOnlyValue, toDatetimeLocalValue } from "@/lib/format";
@@ -203,29 +203,25 @@ export function CalendarView() {
         onCreated={handleSaved}
       />
 
-      <InterventoDetailDialog
+      <InterventoInfoDialog
         open={detailSource === "intervento"}
         onOpenChange={(next) => !next && closeDetail()}
         interventoId={detailSource === "intervento" ? detailId : null}
-        onSaved={handleSaved}
+        onChanged={handleSaved}
       />
 
-      <TaskDetailDialog
+      <TaskInfoDialog
         open={detailSource === "task"}
         onOpenChange={(next) => !next && closeDetail()}
         taskId={detailSource === "task" ? detailId : null}
-        onSaved={handleSaved}
+        onChanged={handleSaved}
       />
 
-      <EventoDetailDialog
+      <EventoInfoDialog
         open={detailSource === "evento"}
         onOpenChange={(next) => !next && closeDetail()}
         eventoId={detailSource === "evento" ? detailId : null}
-        onSaved={handleSaved}
-        onDeleted={() => {
-          closeDetail();
-          handleSaved();
-        }}
+        onChanged={handleSaved}
       />
     </div>
   );

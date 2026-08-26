@@ -19,11 +19,13 @@ export type CreateTicketInput =
   | {
       titolo: string;
       note?: string;
+      questionario?: Record<string, string[]>;
       cliente: { mode: "existing"; id: string };
     }
   | {
       titolo: string;
       note?: string;
+      questionario?: Record<string, string[]>;
       cliente: { mode: "new"; data: NuovoClienteInput };
     };
 
@@ -84,6 +86,7 @@ export async function createTicket(input: CreateTicketInput): Promise<CreateTick
       titolo: input.titolo.trim(),
       descrizione: input.note?.trim() || null,
       cliente_id: clienteId,
+      questionario: input.questionario ?? {},
       created_by: user.id,
     })
     .select("id")
@@ -137,6 +140,34 @@ export async function updateTicket(
 
   if (error) {
     return { error: "Errore nell'aggiornamento del ticket: " + error.message };
+  }
+
+  return { success: true };
+}
+
+export async function updateTicketChecklistItem(
+  ticketId: string,
+  slug: string,
+  checked: boolean
+): Promise<{ error: string } | { success: true }> {
+  const supabase = await createClient();
+
+  const { data: ticket, error: fetchError } = await supabase
+    .from("ticket")
+    .select("checklist")
+    .eq("id", ticketId)
+    .single();
+
+  if (fetchError || !ticket) {
+    return { error: "Errore nel caricamento della checklist: " + fetchError?.message };
+  }
+
+  const checklist = { ...ticket.checklist, [slug]: checked };
+
+  const { error } = await supabase.from("ticket").update({ checklist }).eq("id", ticketId);
+
+  if (error) {
+    return { error: "Errore nell'aggiornamento della checklist: " + error.message };
   }
 
   return { success: true };

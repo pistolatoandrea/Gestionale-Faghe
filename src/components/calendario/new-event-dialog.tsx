@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -30,6 +31,14 @@ import { toDateOnlyValue } from "@/lib/format";
 
 type NuovoEventoTipo = "intervento" | "task" | "evento";
 type TaskLinkTipo = "ticket" | "cliente";
+type LuogoModalita = "cliente" | "nuovo";
+
+function formatIndirizzoCliente(cliente: TicketOption["cliente"]): string {
+  if (!cliente) return "";
+  const via = cliente.indirizzo?.trim();
+  const cittaCap = [cliente.cap?.trim(), cliente.citta?.trim()].filter(Boolean).join(" ");
+  return [via, cittaCap].filter(Boolean).join(", ");
+}
 
 export function NewEventDialog({
   open,
@@ -44,13 +53,15 @@ export function NewEventDialog({
 }) {
   const [pending, startTransition] = useTransition();
 
-  const [tipo, setTipo] = useState<NuovoEventoTipo>("evento");
+  const [tipo, setTipo] = useState<NuovoEventoTipo>("intervento");
 
   const [nome, setNome] = useState("");
   const [dataOra, setDataOra] = useState(initialDataOra);
   const [luogo, setLuogo] = useState("");
+  const [note, setNote] = useState("");
 
   const [ticket, setTicket] = useState<TicketOption | null>(null);
+  const [luogoModalita, setLuogoModalita] = useState<LuogoModalita>("cliente");
   const [interventoDescrizione, setInterventoDescrizione] = useState("");
 
   const [titolo, setTitolo] = useState("");
@@ -66,11 +77,13 @@ export function NewEventDialog({
   if (open !== prevOpen) {
     setPrevOpen(open);
     if (open) {
-      setTipo("evento");
+      setTipo("intervento");
       setNome("");
       setDataOra(initialDataOra);
       setLuogo("");
+      setNote("");
       setTicket(null);
+      setLuogoModalita("cliente");
       setInterventoDescrizione("");
       setTitolo("");
       setTaskLinkTipo("ticket");
@@ -79,6 +92,22 @@ export function NewEventDialog({
       setScadenza(toDateOnlyValue(initialDataOra ? new Date(initialDataOra) : new Date()));
       setTaskDescrizione("");
     }
+  }
+
+  function handleSelectTicket(t: TicketOption) {
+    setTicket(t);
+    if (luogoModalita === "cliente") {
+      setLuogo(formatIndirizzoCliente(t.cliente));
+    }
+  }
+
+  function handleLuogoModalitaChange(value: LuogoModalita) {
+    if (!ticket) {
+      toast.error("Seleziona prima il ticket collegato.");
+      return;
+    }
+    setLuogoModalita(value);
+    setLuogo(value === "cliente" ? formatIndirizzoCliente(ticket.cliente) : "");
   }
 
   function handleSubmit() {
@@ -97,6 +126,7 @@ export function NewEventDialog({
           nome,
           dataOra: new Date(dataOra).toISOString(),
           luogo,
+          note,
         });
 
         if ("error" in result) {
@@ -220,6 +250,15 @@ export function NewEventDialog({
                 <Label htmlFor="nuovo-evento-luogo">Luogo</Label>
                 <Input id="nuovo-evento-luogo" value={luogo} onChange={(e) => setLuogo(e.target.value)} />
               </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="nuovo-evento-note">Note</Label>
+                <Textarea
+                  id="nuovo-evento-note"
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  rows={3}
+                />
+              </div>
             </>
           )}
 
@@ -227,7 +266,7 @@ export function NewEventDialog({
             <>
               <div className="flex flex-col gap-2">
                 <Label>Ticket collegato</Label>
-                <TicketCombobox value={ticket} onSelect={setTicket} />
+                <TicketCombobox value={ticket} onSelect={handleSelectTicket} />
               </div>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="nuovo-intervento-data-ora">Giorno e ora</Label>
@@ -239,13 +278,39 @@ export function NewEventDialog({
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <Label htmlFor="nuovo-intervento-luogo">Luogo</Label>
-                <Input
-                  id="nuovo-intervento-luogo"
-                  value={luogo}
-                  onChange={(e) => setLuogo(e.target.value)}
-                  placeholder="Indirizzo dell'intervento"
-                />
+                <Label>Luogo</Label>
+                <RadioGroup
+                  value={luogoModalita}
+                  onValueChange={(v) => handleLuogoModalitaChange(v as LuogoModalita)}
+                >
+                  <div className="flex items-center gap-2">
+                    <RadioGroupItem value="cliente" id="nuovo-intervento-luogo-cliente" />
+                    <Label htmlFor="nuovo-intervento-luogo-cliente" className="cursor-pointer font-normal">
+                      Stesso indirizzo del cliente
+                    </Label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <RadioGroupItem value="nuovo" id="nuovo-intervento-luogo-nuovo" />
+                    <Label htmlFor="nuovo-intervento-luogo-nuovo" className="cursor-pointer font-normal">
+                      Nuovo indirizzo
+                    </Label>
+                  </div>
+                </RadioGroup>
+
+                {luogoModalita === "cliente" ? (
+                  <p className="text-sm text-muted-foreground">
+                    {!ticket
+                      ? "Seleziona prima il ticket collegato."
+                      : (luogo || "Nessun indirizzo disponibile per questo cliente.")}
+                  </p>
+                ) : (
+                  <Input
+                    id="nuovo-intervento-luogo"
+                    value={luogo}
+                    onChange={(e) => setLuogo(e.target.value)}
+                    placeholder="Indirizzo dell'intervento"
+                  />
+                )}
               </div>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="nuovo-intervento-descrizione">Descrizione</Label>

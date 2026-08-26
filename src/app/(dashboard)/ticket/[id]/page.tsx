@@ -11,6 +11,8 @@ import { NewInterventoDialog } from "@/components/interventi/new-intervento-dial
 import { InterventiTable, type InterventoRow } from "@/components/interventi/interventi-table";
 import { resolveTaskLinks, type TaskRow } from "@/lib/task-links";
 import { formatDateIT } from "@/lib/format";
+import { TICKET_QUESTIONARIO, risposteLabel } from "@/lib/ticket-questionario";
+import { TicketChecklist } from "@/components/ticket/ticket-checklist";
 
 const CANALE_LABELS = { telefono: "Telefono", email: "Email", altro: "Altro" };
 
@@ -25,7 +27,7 @@ export default async function TicketDettaglioPage({
   const { data: ticket } = await supabase
     .from("ticket")
     .select(
-      "id, numero, titolo, descrizione, stato, canale, priorita, created_at, clienti(id, nome)"
+      "id, numero, titolo, descrizione, stato, canale, priorita, created_at, questionario, checklist, clienti(id, nome)"
     )
     .eq("id", id)
     .single();
@@ -115,6 +117,37 @@ export default async function TicketDettaglioPage({
           </dl>
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader>
+          <h2 className="text-lg font-semibold">Checklist</h2>
+        </CardHeader>
+        <CardContent>
+          <TicketChecklist ticketId={ticket.id} initialChecklist={ticket.checklist} />
+        </CardContent>
+      </Card>
+
+      {TICKET_QUESTIONARIO.some((d) => (ticket.questionario[d.slug] ?? []).length > 0) && (
+        <Card>
+          <CardHeader>
+            <h2 className="text-lg font-semibold">Questionario</h2>
+          </CardHeader>
+          <CardContent>
+            <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {TICKET_QUESTIONARIO.filter((d) => (ticket.questionario[d.slug] ?? []).length > 0).map(
+                (d) => (
+                  <div key={d.slug}>
+                    <dt className="text-xs text-muted-foreground">{d.domanda}</dt>
+                    <dd>
+                      {ticket.questionario[d.slug].map((v) => risposteLabel(d.slug, v)).join(", ")}
+                    </dd>
+                  </div>
+                )
+              )}
+            </dl>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">Interventi</h2>

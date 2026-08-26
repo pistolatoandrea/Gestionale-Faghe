@@ -85,6 +85,8 @@ export interface Database {
           stato: TicketStato;
           priorita: string | null;
           canale: TicketCanale;
+          questionario: Record<string, string[]>;
+          checklist: Record<string, boolean>;
           created_by: string | null;
           created_at: string;
           updated_at: string;
@@ -98,6 +100,8 @@ export interface Database {
           stato?: TicketStato;
           priorita?: string | null;
           canale?: TicketCanale;
+          questionario?: Record<string, string[]>;
+          checklist?: Record<string, boolean>;
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -130,6 +134,11 @@ export interface Database {
           stato: InterventoStato;
           assegnato_a: string | null;
           descrizione: string | null;
+          report_oggetto: string | null;
+          report_verifiche: string | null;
+          report_operatore: string | null;
+          report_path: string | null;
+          report_generato_at: string | null;
           created_by: string | null;
           created_at: string;
           updated_at: string;
@@ -143,6 +152,11 @@ export interface Database {
           stato?: InterventoStato;
           assegnato_a?: string | null;
           descrizione?: string | null;
+          report_oggetto?: string | null;
+          report_verifiche?: string | null;
+          report_operatore?: string | null;
+          report_path?: string | null;
+          report_generato_at?: string | null;
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -172,12 +186,48 @@ export interface Database {
           },
         ];
       };
+      intervento_foto: {
+        Row: {
+          id: string;
+          intervento_id: string;
+          storage_path: string;
+          nome_file: string | null;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          intervento_id: string;
+          storage_path: string;
+          nome_file?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["intervento_foto"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "intervento_foto_intervento_id_fkey";
+            columns: ["intervento_id"];
+            isOneToOne: false;
+            referencedRelation: "interventi";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "intervento_foto_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       eventi: {
         Row: {
           id: string;
           nome: string;
           data_ora: string;
           luogo: string | null;
+          note: string | null;
           created_by: string | null;
           created_at: string;
           updated_at: string;
@@ -187,6 +237,7 @@ export interface Database {
           nome: string;
           data_ora: string;
           luogo?: string | null;
+          note?: string | null;
           created_by?: string | null;
           created_at?: string;
           updated_at?: string;

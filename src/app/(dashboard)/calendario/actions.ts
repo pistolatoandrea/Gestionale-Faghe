@@ -6,6 +6,7 @@ export interface EventoInput {
   nome: string;
   dataOra: string;
   luogo?: string;
+  note?: string;
 }
 
 export type EventoResult = { eventoId: string } | { error: string };
@@ -32,6 +33,7 @@ export async function createEvento(input: EventoInput): Promise<EventoResult> {
       nome,
       data_ora: input.dataOra,
       luogo: input.luogo?.trim() || null,
+      note: input.note?.trim() || null,
       created_by: user.id,
     })
     .select("id")
@@ -61,6 +63,7 @@ export async function updateEvento(
       nome,
       data_ora: input.dataOra,
       luogo: input.luogo?.trim() || null,
+      note: input.note?.trim() || null,
     })
     .eq("id", eventoId);
 

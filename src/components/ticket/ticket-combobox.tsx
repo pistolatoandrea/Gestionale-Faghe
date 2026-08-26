@@ -19,6 +19,12 @@ export interface TicketOption {
   id: string;
   numero: number;
   titolo: string;
+  cliente: {
+    nome: string;
+    indirizzo: string | null;
+    citta: string | null;
+    cap: string | null;
+  } | null;
 }
 
 export function TicketCombobox({
@@ -41,14 +47,14 @@ export function TicketCombobox({
       startSearch(async () => {
         let req = supabase
           .from("ticket")
-          .select("id, numero, titolo")
+          .select("id, numero, titolo, cliente:cliente_id(nome, indirizzo, citta, cap)")
           .order("created_at", { ascending: false })
           .limit(8);
         const term = query.trim();
         if (term) {
           req = req.ilike("titolo", `%${term}%`);
         }
-        const { data } = await req;
+        const { data } = await req.returns<TicketOption[]>();
         setResults(data ?? []);
       });
     }, 250);
