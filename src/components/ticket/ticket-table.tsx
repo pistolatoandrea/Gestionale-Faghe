@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { TicketRowActions } from "@/components/ticket/ticket-row-actions";
 import { TicketStatusPopover } from "@/components/ticket/ticket-status-popover";
 import { formatDateIT } from "@/lib/format";
 import type { TicketStato } from "@/lib/supabase/types";
@@ -14,7 +16,7 @@ export interface TicketRow {
   titolo: string;
   stato: TicketStato;
   created_at: string;
-  clienti: { nome: string } | null;
+  clienti: { id: string; nome: string } | null;
 }
 
 type SortField = "titolo" | "stato" | "created_at";
@@ -98,6 +100,7 @@ export function TicketTable({
             ) : (
               <TableHead>Data</TableHead>
             )}
+            <TableHead className="w-10" />
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -105,10 +108,27 @@ export function TicketTable({
             <TableRow
               key={t.id}
               className="cursor-pointer"
-              onClick={() => router.push(`/ticket/${t.id}`)}
+              onClick={(e) => {
+                if (!e.currentTarget.contains(e.target as Node)) return;
+                router.push(`/ticket/${t.id}`);
+              }}
             >
               <TableCell className="font-medium">{t.titolo}</TableCell>
-              {showCliente && <TableCell>{t.clienti?.nome ?? "—"}</TableCell>}
+              {showCliente && (
+                <TableCell>
+                  {t.clienti ? (
+                    <Link
+                      href={`/clienti/${t.clienti.id}`}
+                      className="text-primary hover:underline"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {t.clienti.nome}
+                    </Link>
+                  ) : (
+                    "—"
+                  )}
+                </TableCell>
+              )}
               <TableCell>
                 <TicketStatusPopover
                   ticketId={t.id}
@@ -117,6 +137,12 @@ export function TicketTable({
                 />
               </TableCell>
               <TableCell>{formatDateIT(t.created_at)}</TableCell>
+              <TableCell>
+                <TicketRowActions
+                  ticketId={t.id}
+                  onDeleted={() => setItems((prev) => prev.filter((x) => x.id !== t.id))}
+                />
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

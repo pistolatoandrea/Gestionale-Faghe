@@ -26,13 +26,14 @@ export function ClienteFormFields({
         <div className="flex flex-col gap-2">
           <Label>Tipo</Label>
           <Select
+            modal={false}
             value={value.tipo}
             onValueChange={(v) => onChange((c) => ({ ...c, tipo: v as ClienteTipo }))}
           >
-            <SelectTrigger className="w-full">
+            <SelectTrigger className="w-full" onClick={(e) => e.stopPropagation()}>
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent onClick={(e) => e.stopPropagation()}>
               <SelectItem value="privato">Privato</SelectItem>
               <SelectItem value="azienda">Azienda</SelectItem>
             </SelectContent>

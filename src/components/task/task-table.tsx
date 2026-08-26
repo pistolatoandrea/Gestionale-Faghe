@@ -6,6 +6,7 @@ import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { TaskRowActions } from "@/components/task/task-row-actions";
 import { TaskStatusPopover } from "@/components/task/task-status-popover";
 import { formatDateIT } from "@/lib/format";
 import type { TaskRowWithLink } from "@/lib/task-links";
@@ -96,6 +97,7 @@ export function TaskTable({
               <TableHead>Data</TableHead>
             )}
             {showLink && <TableHead>Collegata a</TableHead>}
+            <TableHead className="w-10" />
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -122,6 +124,12 @@ export function TaskTable({
                   )}
                 </TableCell>
               )}
+              <TableCell>
+                <TaskRowActions
+                  taskId={t.id}
+                  onDeleted={() => setItems((prev) => prev.filter((x) => x.id !== t.id))}
+                />
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

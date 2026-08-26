@@ -109,6 +109,7 @@ export function CalendarView() {
         start: t.scadenza as string,
         allDay: true,
         color: CALENDAR_SOURCE_STYLE.task.color,
+        textColor: "#1a1a1a",
         extendedProps: { source: "task" } satisfies CalendarExtendedProps,
       })),
       ...(eventiRes.data ?? []).map((e) => ({
@@ -178,7 +179,7 @@ export function CalendarView() {
         <FullCalendar
           ref={calendarRef}
           plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
-          initialView="dayGridMonth"
+          initialView="listWeek"
           headerToolbar={{
             left: "prev,next today",
             center: "title",

@@ -11,7 +11,7 @@ export default async function TicketPage() {
 
   const { data: tickets } = await supabase
     .from("ticket")
-    .select("id, titolo, stato, created_at, clienti(nome)")
+    .select("id, titolo, stato, created_at, clienti(id, nome)")
     .order("created_at", { ascending: false })
     .limit(RECENT_LIMIT)
     .returns<TicketRow[]>();

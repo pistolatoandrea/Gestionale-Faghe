@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ClienteRowActions } from "@/components/clienti/cliente-row-actions";
 import { formatDateIT } from "@/lib/format";
 import { CLIENTE_TIPO_LABELS } from "@/lib/cliente-draft";
 import type { ClienteTipo } from "@/lib/supabase/types";
@@ -66,10 +68,18 @@ export function ClientiTable({
   sortable?: boolean;
 }) {
   const router = useRouter();
-  const showTicketAttivi = !sortable && clienti.some((c) => c.ticketAttivi !== undefined);
+  const [prevClienti, setPrevClienti] = useState(clienti);
+  const [items, setItems] = useState(clienti);
+
+  if (clienti !== prevClienti) {
+    setPrevClienti(clienti);
+    setItems(clienti);
+  }
+
+  const showTicketAttivi = !sortable && items.some((c) => c.ticketAttivi !== undefined);
   const showData = sortable;
 
-  if (clienti.length === 0) {
+  if (items.length === 0) {
     return (
       <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
         Nessun cliente trovato.
@@ -89,14 +99,18 @@ export function ClientiTable({
             <TableHead>Città</TableHead>
             {showTicketAttivi && <TableHead>Ticket attivi</TableHead>}
             {showData && <SortableHead field="created_at" label="Cliente da" />}
+            <TableHead className="w-10" />
           </TableRow>
         </TableHeader>
         <TableBody>
-          {clienti.map((c) => (
+          {items.map((c) => (
             <TableRow
               key={c.id}
               className="cursor-pointer"
-              onClick={() => router.push(`/clienti/${c.id}`)}
+              onClick={(e) => {
+                if (!e.currentTarget.contains(e.target as Node)) return;
+                router.push(`/clienti/${c.id}`);
+              }}
             >
               <TableCell className="font-medium">{c.nome}</TableCell>
               <TableCell>{CLIENTE_TIPO_LABELS[c.tipo]}</TableCell>
@@ -109,6 +123,12 @@ export function ClientiTable({
                 </TableCell>
               )}
               {showData && <TableCell>{c.created_at ? formatDateIT(c.created_at) : "—"}</TableCell>}
+              <TableCell>
+                <ClienteRowActions
+                  clienteId={c.id}
+                  onDeleted={() => setItems((prev) => prev.filter((x) => x.id !== c.id))}
+                />
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

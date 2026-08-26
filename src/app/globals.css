@@ -156,3 +156,29 @@
 .fc-midnight .fc-button {
   text-transform: capitalize;
 }
+
+@media (max-width: 640px) {
+  .fc-midnight .fc-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .fc-midnight .fc-toolbar-chunk {
+    display: flex;
+    justify-content: center;
+  }
+
+  .fc-midnight .fc-toolbar-chunk:has(.fc-button-group) {
+    flex-wrap: wrap;
+  }
+
+  .fc-midnight .fc-toolbar-title {
+    font-size: 1.1rem;
+  }
+
+  .fc-midnight .fc-button {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.8rem;
+  }
+}

@@ -33,7 +33,7 @@ async function TicketListaCompleta({ searchParams }: { searchParams: TuttiTicket
 
   let query = supabase
     .from("ticket")
-    .select("id, titolo, stato, created_at, clienti!inner(nome)", { count: "exact" });
+    .select("id, titolo, stato, created_at, clienti!inner(id, nome)", { count: "exact" });
 
   if (q) {
     query = query.filter("clienti.nome", "ilike", `%${q}%`);

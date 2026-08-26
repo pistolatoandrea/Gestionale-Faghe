@@ -46,7 +46,7 @@ export default async function ClienteDettaglioPage({
 
   const { data: ticketCollegati, error: ticketError } = await supabase
     .from("ticket")
-    .select("id, titolo, stato, created_at, clienti(nome)")
+    .select("id, titolo, stato, created_at, clienti(id, nome)")
     .eq("cliente_id", id)
     .order("created_at", { ascending: false })
     .returns<TicketRow[]>();

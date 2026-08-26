@@ -7,6 +7,6 @@ export type CalendarSource = "intervento" | "task" | "evento";
 
 export const CALENDAR_SOURCE_STYLE: Record<CalendarSource, { color: string; label: string }> = {
   intervento: { color: "#0a84ff", label: "Intervento" },
-  task: { color: "#5e5ce6", label: "Task" },
+  task: { color: "#ffd60a", label: "Task" },
   evento: { color: "#8e8e93", label: "Altro" },
 };

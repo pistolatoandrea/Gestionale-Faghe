@@ -6,6 +6,7 @@ import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { InterventoRowActions } from "@/components/interventi/intervento-row-actions";
 import { InterventoStatusPopover } from "@/components/interventi/intervento-status-popover";
 import { formatDateTimeIT } from "@/lib/format";
 import type { InterventoStato } from "@/lib/supabase/types";
@@ -66,6 +67,7 @@ export function InterventiTable({
   sortable?: boolean;
   showTicket?: boolean;
 }) {
+  const router = useRouter();
   const [prevInterventi, setPrevInterventi] = useState(interventi);
   const [items, setItems] = useState(interventi);
 
@@ -102,11 +104,19 @@ export function InterventiTable({
             )}
             {sortable ? <SortableHead field="stato" label="Stato" /> : <TableHead>Stato</TableHead>}
             {showTicket && <TableHead>Ticket</TableHead>}
+            <TableHead className="w-10" />
           </TableRow>
         </TableHeader>
         <TableBody>
           {items.map((i) => (
-            <TableRow key={i.id}>
+            <TableRow
+              key={i.id}
+              className="cursor-pointer"
+              onClick={(e) => {
+                if (!e.currentTarget.contains(e.target as Node)) return;
+                router.push(`/interventi/${i.id}`);
+              }}
+            >
               <TableCell className="font-medium">{i.nome}</TableCell>
               <TableCell>{i.luogo ?? "—"}</TableCell>
               <TableCell>{formatDateTimeIT(i.data_ora)}</TableCell>
@@ -120,7 +130,11 @@ export function InterventiTable({
               {showTicket && (
                 <TableCell>
                   {i.ticket ? (
-                    <Link href={`/ticket/${i.ticket.id}`} className="text-primary hover:underline">
+                    <Link
+                      href={`/ticket/${i.ticket.id}`}
+                      className="text-primary hover:underline"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       {i.ticket.titolo}
                     </Link>
                   ) : (
@@ -128,6 +142,12 @@ export function InterventiTable({
                   )}
                 </TableCell>
               )}
+              <TableCell>
+                <InterventoRowActions
+                  interventoId={i.id}
+                  onDeleted={() => setItems((prev) => prev.filter((x) => x.id !== i.id))}
+                />
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

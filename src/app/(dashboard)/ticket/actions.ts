@@ -110,3 +110,81 @@ export async function updateTicketStato(
 
   return { success: true };
 }
+
+export interface UpdateTicketInput {
+  titolo: string;
+  descrizione?: string;
+}
+
+export async function updateTicket(
+  ticketId: string,
+  input: UpdateTicketInput
+): Promise<{ error: string } | { success: true }> {
+  const titolo = input.titolo.trim();
+  if (!titolo) {
+    return { error: "Il titolo è obbligatorio." };
+  }
+
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("ticket")
+    .update({
+      titolo,
+      descrizione: input.descrizione?.trim() || null,
+    })
+    .eq("id", ticketId);
+
+  if (error) {
+    return { error: "Errore nell'aggiornamento del ticket: " + error.message };
+  }
+
+  return { success: true };
+}
+
+export async function deleteTicket(
+  ticketId: string
+): Promise<{ error: string } | { success: true }> {
+  const supabase = await createClient();
+
+  const { data: interventi, error: interventiError } = await supabase
+    .from("interventi")
+    .select("id")
+    .eq("ticket_id", ticketId);
+
+  if (interventiError) {
+    return { error: "Errore nella lettura degli interventi collegati: " + interventiError.message };
+  }
+
+  const interventoIds = (interventi ?? []).map((i) => i.id);
+
+  const { error: taskTicketError } = await supabase
+    .from("task")
+    .delete()
+    .eq("entity_type", "ticket")
+    .eq("entity_id", ticketId);
+
+  if (taskTicketError) {
+    return { error: "Errore nell'eliminazione delle task collegate: " + taskTicketError.message };
+  }
+
+  if (interventoIds.length > 0) {
+    const { error: taskInterventoError } = await supabase
+      .from("task")
+      .delete()
+      .eq("entity_type", "intervento")
+      .in("entity_id", interventoIds);
+
+    if (taskInterventoError) {
+      return { error: "Errore nell'eliminazione delle task collegate: " + taskInterventoError.message };
+    }
+  }
+
+  const { error } = await supabase.from("ticket").delete().eq("id", ticketId);
+
+  if (error) {
+    return { error: "Errore nell'eliminazione del ticket: " + error.message };
+  }
+
+  return { success: true };
+}

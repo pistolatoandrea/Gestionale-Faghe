@@ -99,6 +99,30 @@ export async function updateIntervento(
   return { success: true };
 }
 
+export async function deleteIntervento(
+  interventoId: string
+): Promise<{ error: string } | { success: true }> {
+  const supabase = await createClient();
+
+  const { error: taskError } = await supabase
+    .from("task")
+    .delete()
+    .eq("entity_type", "intervento")
+    .eq("entity_id", interventoId);
+
+  if (taskError) {
+    return { error: "Errore nell'eliminazione delle task collegate: " + taskError.message };
+  }
+
+  const { error } = await supabase.from("interventi").delete().eq("id", interventoId);
+
+  if (error) {
+    return { error: "Errore nell'eliminazione dell'intervento: " + error.message };
+  }
+
+  return { success: true };
+}
+
 export async function updateInterventoStato(
   interventoId: string,
   stato: InterventoStato

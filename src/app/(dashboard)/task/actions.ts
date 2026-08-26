@@ -82,6 +82,20 @@ export async function updateTask(
   return { success: true };
 }
 
+export async function deleteTask(
+  taskId: string
+): Promise<{ error: string } | { success: true }> {
+  const supabase = await createClient();
+
+  const { error } = await supabase.from("task").delete().eq("id", taskId);
+
+  if (error) {
+    return { error: "Errore nell'eliminazione della task: " + error.message };
+  }
+
+  return { success: true };
+}
+
 export async function updateTaskStato(
   taskId: string,
   stato: TaskStato
